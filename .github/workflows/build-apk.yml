@@ -1,1 +1,61 @@
+name: Build AUDIX Android App (APK & AAB)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Locate Project & Get Dependencies
+        run: |
+          if [ -d "audix apoplication" ]; then
+            cd "audix apoplication"
+          fi
+          flutter pub get
+
+      - name: Build Release APK
+        run: |
+          if [ -d "audix apoplication" ]; then
+            cd "audix apoplication"
+          fi
+          flutter build apk --release
+
+      - name: Build Play Store App Bundle (AAB)
+        run: |
+          if [ -d "audix apoplication" ]; then
+            cd "audix apoplication"
+          fi
+          flutter build appbundle --release
+
+      - name: Upload Release APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AUDIX-Release-APK
+          path: "**/build/app/outputs/flutter-apk/app-release.apk"
+
+      - name: Upload Play Store AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AUDIX-PlayStore-AAB
+          path: "**/build/app/outputs/bundle/release/app-release.aab"
 
